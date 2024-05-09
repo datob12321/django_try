@@ -23,6 +23,9 @@
       <div class="form signup">
         <header>Signup</header>
 
+        {% for message in messages %}
+        <h1>{{ message }}</h1>
+      {% endfor %}
         <form action="#">
           <input type="text" placeholder="Full name" required />
           <input type="text" placeholder="Email address" required />
@@ -39,11 +42,12 @@
 
       <div class="form login">
         <header>Login</header>
-        <form action="#">
-          <input type="text" placeholder="Email address" required />
-          <input type="password" placeholder="Password" required />
+        <form action="{% url 'login' %}" method="POST">
+          {% csrf_token %}
+          <input type="text" placeholder="Username" required name="username" />
+          <input type="password" placeholder="Password" required name="password" />
           <a href="#">Forgot password?</a>
-          <input type="submit" value="Login" />
+          <input type="submit" value="Login" name="login"/>
         </form>
       </div>
 
