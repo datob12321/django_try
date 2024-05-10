@@ -5,9 +5,12 @@ from django.contrib import messages
 
 
 # Create your views here.
-def index(request):
 
+def index(request):
     return render(request, 'index.html')
+def auth(request):
+
+    return render(request, 'auth.html')
 
 
 def login(request):
@@ -24,6 +27,6 @@ def login(request):
                 messages.error(request, 'Invalid username or password!')
                 return redirect('login')
     else:
-        return render(request, 'index.html')
+        return render(request, 'auth.html')
 
 
