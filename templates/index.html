@@ -116,6 +116,10 @@
         <img src="images/profile.jpg" alt="logo_img" />
       </span>
     </nav>
+  {% for post in posts %}
+    <img src="{{ post.post_image.url }}" width="500px" height="">
+    <h1>{{ post.post_text }}</h1>
+    {% endfor %}
   </body>
 
 <script>

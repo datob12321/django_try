@@ -1,14 +1,15 @@
+from django.contrib.auth import authenticate, login as log_in, logout as log_out
 from django.contrib import messages
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth.models import User, auth
-from .models import User_Profile
 from django.contrib.auth import authenticate, logout, login as log_in
 from django.contrib.auth.decorators import login_required
-
+from .models import User_Profile, Post
 
 # Create your views here.
 def index(request):
-    return render(request, 'index.html')
+    posts = Post.objects.all()
+    return render(request, 'index.html', {'posts': posts})
 
 
 def signup(request):
@@ -37,10 +38,9 @@ def signup(request):
                 user_mode = User.objects.get(username=username)
                 new_profile = User_Profile.objects.create(user=user_mode)
                 new_profile.save()
-                return redirect('index')
-
+                return redirect('settings')
         else:
-            messages.success(request, 'Password not matching')
+            messages.error(request, 'Password not matching')
             return redirect('signup')
 
     if request.user.is_authenticated:

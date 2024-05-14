@@ -70,6 +70,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media',
             ],
         },
     },
@@ -128,10 +129,8 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
-
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-]
+MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = '/media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -139,3 +138,4 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #'bnxm uxhf txmk zqvx' 'cpci ujvk mlbu asdj'
+
