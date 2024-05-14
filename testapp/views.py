@@ -1,10 +1,9 @@
-from django.contrib.auth import authenticate, login as log_in, logout as log_out
 from django.contrib import messages
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth.models import User, auth
 from django.contrib.auth import authenticate, logout, login as log_in
 from django.contrib.auth.decorators import login_required
-from .models import User_Profile, Post
+from .models import User_Profile, Post, LikePost, FollowUser
 
 # Create your views here.
 def index(request):
@@ -57,7 +56,7 @@ def logout_user(request):
 
 
 def settings(request):
-    return HttpResponse('Settings')
+    return render(request, 'settings.html')
 
 
 def login(request):
@@ -79,54 +78,45 @@ def login(request):
         return render(request, 'login.html')
 
 
-# @login_required(login_url='login')
-# def like_content(request):
-#     if request.method == 'POST':
-#         post_id = request.POST['post_id']
-#         post = Post.objects.get(id=post_id)
-#         user = request.user
-#         if LikePost.objects.filter(user=user, post=post).exists():  # unlike
-#             LikePost.objects.filter(userne=user, post=post).delete()
-#             post.no_of_likes -= 1
-#             post.save()
-#         else:
-#             LikePost.objects.create(user=user, post=post)
-#             post.no_of_likes += 1
-#             post.save()
-#         return redirect('index')
-#
-#
-# @login_required(login_url='login')
-# def follow_user(request):
-#     if request.method == 'POST':
-#         following_id = request.POST['following_id']
-#         following = User.objects.get(id=following_id)
-#         follower = request.user
-#         if FollowUser.objects.filter(follower=follower, following=following).exists():
-#             FollowUser.objects.filter(follower=follower, following=following).delete()
-#             following_profile = User_Profile.objects.get(user=following)
-#             following_profile.followers -= 1
-#             following_profile.save()
-#             follower_profile = User_Profile.objects.get(user=follower)
-#             follower_profile.following -= 1
-#             follower_profile.save()
-#         else:
-#             FollowUser.objects.create(follower=follower, following=following)
-#             following_profile = User_Profile.objects.get(user=following)
-#             following_profile.followers += 1
-#             following_profile.save()
-#             follower_profile = User_Profile.objects.get(user=follower)
-#             follower_profile.following += 1
-#             follower_profile.save()
-#
-#         return redirect('index')
-#     return redirect('index')
+@login_required(login_url='login')
+def like_content(request):
+    if request.method == 'POST':
+        post_id = request.POST['post_id']
+        post = Post.objects.get(id=post_id)
+        user = request.user
+        if LikePost.objects.filter(user=user, post=post).exists():  # unlike
+            LikePost.objects.filter(userne=user, post=post).delete()
+            post.no_of_likes -= 1
+            post.save()
+        else:
+            LikePost.objects.create(user=user, post=post)
+            post.no_of_likes += 1
+            post.save()
+        return redirect('index')
 
 
+@login_required(login_url='login')
+def follow_user(request):
+    if request.method == 'POST':
+        following_id = request.POST['following_id']
+        following = User.objects.get(id=following_id)
+        follower = request.user
+        if FollowUser.objects.filter(follower=follower, following=following).exists():
+            FollowUser.objects.filter(follower=follower, following=following).delete()
+            following_profile = User_Profile.objects.get(user=following)
+            following_profile.followers -= 1
+            following_profile.save()
+            follower_profile = User_Profile.objects.get(user=follower)
+            follower_profile.following -= 1
+            follower_profile.save()
+        else:
+            FollowUser.objects.create(follower=follower, following=following)
+            following_profile = User_Profile.objects.get(user=following)
+            following_profile.followers += 1
+            following_profile.save()
+            follower_profile = User_Profile.objects.get(user=follower)
+            follower_profile.following += 1
+            follower_profile.save()
 
-
-
-
-
-
-
+        return redirect('index')
+    return redirect('index')
