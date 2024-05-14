@@ -79,20 +79,18 @@ def login(request):
 
 
 @login_required(login_url='login')
-def like_content(request):
-    if request.method == 'POST':
-        post_id = request.POST['post_id']
-        post = Post.objects.get(id=post_id)
-        user = request.user
-        if LikePost.objects.filter(user=user, post=post).exists():  # unlike
-            LikePost.objects.filter(userne=user, post=post).delete()
-            post.no_of_likes -= 1
-            post.save()
-        else:
-            LikePost.objects.create(user=user, post=post)
-            post.no_of_likes += 1
-            post.save()
-        return redirect('index')
+def like_content(request, post_id):
+    post = Post.objects.get(id=post_id)
+    user = request.user
+    if LikePost.objects.filter(user=user, post=post).exists():  # unlike
+        LikePost.objects.filter(user=user, post=post).delete()
+        post.likes -= 1
+        post.save()
+    else:
+        LikePost.objects.create(user=user, post=post)
+        post.likes += 1
+        post.save()
+    return redirect('index')
 
 
 @login_required(login_url='login')
