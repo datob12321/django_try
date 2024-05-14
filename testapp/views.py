@@ -1,15 +1,14 @@
 from django.contrib import messages
 from django.shortcuts import render, redirect, HttpResponse
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, auth
 from .models import User_Profile
-from django.contrib.auth import authenticate, login as log_in, logout
+from django.contrib.auth import authenticate, logout, login as log_in
 from django.contrib.auth.decorators import login_required
-
 
 
 # Create your views here.
 def index(request):
-    return HttpResponse('Hello World')
+    return render(request, 'index.html')
 
 
 def signup(request):
@@ -21,42 +20,44 @@ def signup(request):
 
         if password == password2:
             if User.objects.filter(username=username).exists():
-                messages.info(request, 'Username Taken')
+                messages.error(request, 'Username Taken')
                 return redirect('signup')
             elif User.objects.filter(email=email).exists():
-                messages.info(request, 'Email Taken')
+                messages.error(request, 'Email Taken')
                 return redirect('signup')
             else:
                 user = User.objects.create_user(username=username, email=email, password=password)
                 user.save()
 
                 # Log user in and redirect to setting page
-
+                user_login = authenticate(username=username, password=password)
+                log_in(request, user_login)
 
                 # create a profile object for new user
                 user_mode = User.objects.get(username=username)
                 new_profile = User_Profile.objects.create(user=user_mode)
                 new_profile.save()
-                return redirect('settings')
+                return redirect('index')
+
         else:
-            messages.info(request, 'Password not matching')
+            messages.success(request, 'Password not matching')
             return redirect('signup')
+
+    if request.user.is_authenticated:
+        return redirect('index')
 
     else:
         return render(request, 'signup.html')
 
 
-def logout(request):
-    return HttpResponse('Logout')
+@login_required(login_url='login')
+def logout_user(request):
+    logout(request)
+    return redirect('login')
 
 
 def settings(request):
     return HttpResponse('Settings')
-
-
-def auth(request):
-
-    return render(request, 'auth.html')
 
 
 def login(request):
@@ -72,7 +73,60 @@ def login(request):
             else:
                 messages.error(request, 'Invalid username or password!')
                 return redirect('login')
+    if request.user.is_authenticated:
+        return redirect('index')
     else:
-        return render(request, 'auth.html')
+        return render(request, 'login.html')
+
+
+# @login_required(login_url='login')
+# def like_content(request):
+#     if request.method == 'POST':
+#         post_id = request.POST['post_id']
+#         post = Post.objects.get(id=post_id)
+#         user = request.user
+#         if LikePost.objects.filter(user=user, post=post).exists():  # unlike
+#             LikePost.objects.filter(userne=user, post=post).delete()
+#             post.no_of_likes -= 1
+#             post.save()
+#         else:
+#             LikePost.objects.create(user=user, post=post)
+#             post.no_of_likes += 1
+#             post.save()
+#         return redirect('index')
+#
+#
+# @login_required(login_url='login')
+# def follow_user(request):
+#     if request.method == 'POST':
+#         following_id = request.POST['following_id']
+#         following = User.objects.get(id=following_id)
+#         follower = request.user
+#         if FollowUser.objects.filter(follower=follower, following=following).exists():
+#             FollowUser.objects.filter(follower=follower, following=following).delete()
+#             following_profile = User_Profile.objects.get(user=following)
+#             following_profile.followers -= 1
+#             following_profile.save()
+#             follower_profile = User_Profile.objects.get(user=follower)
+#             follower_profile.following -= 1
+#             follower_profile.save()
+#         else:
+#             FollowUser.objects.create(follower=follower, following=following)
+#             following_profile = User_Profile.objects.get(user=following)
+#             following_profile.followers += 1
+#             following_profile.save()
+#             follower_profile = User_Profile.objects.get(user=follower)
+#             follower_profile.following += 1
+#             follower_profile.save()
+#
+#         return redirect('index')
+#     return redirect('index')
+
+
+
+
+
+
+
 
 
