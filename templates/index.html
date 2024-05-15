@@ -10,6 +10,7 @@
     <title>Hoverable Sidebar Menu HTML CSS & JavaScript</title>
     <link rel="stylesheet" href="{% static 'side_bar.css' %}" />
     <!-- Boxicons CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link flex href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
     <script src="script.js" defer></script>
   </head>
@@ -116,11 +117,115 @@
         <img src="images/profile.jpg" alt="logo_img" />
       </span>
     </nav>
-  {% for post in posts %}
-    <img src="{{ post.post_image.url }}" width="500px" height="">
-    <h1>{{ post.post_text }}</h1>
-    {% endfor %}
+<br><br><br><br><br>
+    <div class="posts-container">
+        {% for post in posts %}
+      <div class="posts">
+
+        <div class="post_user">
+          <img src="{{ post.user_profile.profile_picture.url }}" width="80px">
+          <h2>{{ post.user.username }}</h2>
+        </div>
+      {% if post.post_text %}
+         <div class="text">
+          <h1>{{ post.post_text }}</h1>
+        </div>
+        {% endif %}
+
+    {% if post.post_image %}
+        <div class="image">
+          <img src="{{ post.post_image.url }}" width="300px" height="">
+        </div>
+        {% endif %}
+
+      {% if post.post_video %}
+        <div class="video">
+           <video width="300" controls>
+      <source src="{{ MEDIA_URL }}{{ post.post_video }}" type="video/mp4">
+    </video>
+        </div>
+        {% endif %}
+
+        <div class="like">
+          <div class="left">
+            <form method="POST" action="">
+            {% csrf_token %}
+            <button type="submit"><a href="#"><i type="submit" class="fa fa-thumbs-up"></i></a></button>
+          </form>
+            <h2>{{ post.likes }}</h2>
+          </div>
+        </div>
+      </div>
+{% endfor %}
+
+
+    </div>
+
   </body>
+
+  <style>
+
+    .posts-container{
+      margin: auto;
+      width: 40%;
+      background-color: darkred;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border-radius: 50px;
+      gap: 20px;
+    }
+
+    .posts{
+  margin: auto;
+  width: 80%;
+    justify-content: center;
+      align-items: center;
+      display: flex;
+      background-color: #4070f4;
+      flex-direction: column;
+      gap: 10px;
+}
+
+    .text{
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-start;
+      width: 100%;
+      background-color: #3e61a8;
+    }
+
+    .like{
+      display: flex;
+      justify-content: flex-start;
+      width: 100%;
+      margin-left: 10px;
+    }
+
+.image img{
+  border-radius: 10px;
+  border: solid white 2px;
+}
+
+.like button{
+  background: none;
+  border: none;
+  font-size: 30px;
+}
+
+.left{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.post_user img{
+  border: solid green 3px;
+}
+
+
+  </style>
 
 <script>
     // Selecting the sidebar and buttons

@@ -48,7 +48,7 @@ body {
 .logo_name {
   font-size: 22px;
   color: #333;
-  font-weight: 500px;
+  font-weight: 500;
   transition: all 0.3s ease;
 }
 .sidebar.close .logo_name,
@@ -215,4 +215,10 @@ body {
   #sidebar-open {
     display: block;
   }
+}
+
+.posts-container{
+  margin: auto;
+  width: 40%;
+  display: flex;
 }
