@@ -1,130 +1,17 @@
+{% extends 'base.html' %}
 
-<!DOCTYPE html>
-{% load static %}
-<!-- Coding by CodingNepal || www.codingnepalweb.com -->
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hoverable Sidebar Menu HTML CSS & JavaScript</title>
-    <link rel="stylesheet" href="{% static 'side_bar.css' %}" />
-    <!-- Boxicons CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link flex href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
-    <script src="script.js" defer></script>
-  </head>
-  <body>
-    <nav class="sidebar locked">
-      <div class="logo_items flex">
-        <span class="nav_image">
-          <img src="images/logo.png" alt="logo_img" />
-        </span>
-        <span class="logo_name">CodingNepal</span>
-        <i class="bx bx-lock-alt" id="lock-icon" title="Unlock Sidebar"></i>
-        <i class="bx bx-x" id="sidebar-close"></i>
-      </div>
+{% block title %}Home{% endblock %}
 
-      <div class="menu_container">
-        <div class="menu_items">
-          <ul class="menu_item">
-            <div class="menu_title flex">
-              <span class="title">Dashboard</span>
-              <span class="line"></span>
-            </div>
-            <li class="item">
-              <a href="#" class="link flex">
-                <i class="bx bx-home-alt"></i>
-                <span>Overview</span>
-              </a>
-            </li>
-            <li class="item">
-              <a href="#" class="link flex">
-                <i class="bx bx-grid-alt"></i>
-                <span>All Projects</span>
-              </a>
-            </li>
-          </ul>
+{% block content %}
 
-          <ul class="menu_item">
-            <div class="menu_title flex">
-              <span class="title">Editor</span>
-              <span class="line"></span>
-            </div>
-            <li class="item">
-              <a href="#" class="link flex">
-                <i class="bx bxs-magic-wand"></i>
-                <span>Magic Build</span>
-              </a>
-            </li>
-            <li class="item">
-              <a href="#" class="link flex">
-                <i class="bx bx-folder"></i>
-                <span>New Projects</span>
-              </a>
-            </li>
-            <li class="item">
-              <a href="#" class="link flex">
-                <i class="bx bx-cloud-upload"></i>
-                <span>Upload New</span>
-              </a>
-            </li>
-          </ul>
-
-          <ul class="menu_item">
-            <div class="menu_title flex">
-              <span class="title">Setting</span>
-              <span class="line"></span>
-            </div>
-            <li class="item">
-              <a href="#" class="link flex">
-                <i class="bx bx-flag"></i>
-                <span><a href="{% url 'settings' %}">Notice Board</a></span>
-              </a>
-            </li>
-            <li class="item">
-              <a href="#" class="link flex">
-                <i class="bx bx-award"></i>
-                <span>Award</span>
-              </a>
-            </li>
-            <li class="item">
-              <a href="#" class="link flex">
-                <i class="bx bx-cog"></i>
-                <span>Setting</span>
-              </a>
-            </li>
-          </ul>
-        </div>
-
-        <div class="sidebar_profile flex">
-          <span class="nav_image">
-            <img src="images/profile.jpg" alt="logo_img" />
-          </span>
-          <div class="data_text">
-            <span class="name">David Oliva</span>
-            <span class="email">david@gmail.com</span>
-          </div>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Navbar -->
-    <nav class="navbar flex">
-      <i class="bx bx-menu" id="sidebar-open"></i>
-      <input type="text" placeholder="Search..." class="search_box" />
-      <span class="nav_image">
-        <img src="images/profile.jpg" alt="logo_img" />
-      </span>
-    </nav>
 <br><br><br><br><br>
     <div class="posts-container">
         {% for post in posts %}
       <div class="posts">
 
         <div class="post_user">
-          <img src="{{ post.user_profile.profile_picture.url }}" width="80px">
-          <h2>{{ post.user.username }}</h2>
+          <img src="{{ post.user_profile.profile_picture.url }}" width="70px">
+          <h3>{{ post.user.username }}</h3>
         </div>
       {% if post.post_text %}
          <div class="text">
@@ -154,7 +41,27 @@
           </form>
             <h2>{{ post.likes }}</h2>
           </div>
+          <div class="right">
+          <h2 class="see-comments">
+            {% if post.comments_count == 0 %}
+            No comments
+            {% elif post.comments_count == 1 %}
+            1 comment
+            {% else %}
+            {{post.comments_count}} comments
+            {% endif %}
+          </h2>
         </div>
+        </div>
+          <div class="comments">
+              {% for comment in post.comments.all %}
+              <div class="comment">
+                  <h3>{{ comment.text }}</h3>
+              </div>
+
+              {% endfor %}
+          </div>
+
       </div>
 {% endfor %}
 
@@ -168,13 +75,16 @@
     .posts-container{
       margin: auto;
       width: 40%;
-      background-color: darkred;
+      background-color: #65777c;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      border-radius: 50px;
+        border-bottom-left-radius: 50px;
+        border-bottom-right-radius: 50px;
       gap: 20px;
+        padding-top: 40px;
+        padding-bottom: 40px;
     }
 
     .posts{
@@ -183,9 +93,10 @@
     justify-content: center;
       align-items: center;
       display: flex;
-      background-color: #4070f4;
+      background-color: #40f4b5;
       flex-direction: column;
       gap: 10px;
+
 }
 
     .text{
@@ -193,14 +104,17 @@
       justify-content: flex-start;
       align-items: flex-start;
       width: 100%;
-      background-color: #3e61a8;
+      background-color: #849dd0;
     }
 
     .like{
       display: flex;
-      justify-content: flex-start;
+      justify-content: space-between;
+      align-items: center;
       width: 100%;
       margin-left: 10px;
+      padding-left: 10px;
+      padding-right: 15px;
     }
 
 .image img{
@@ -222,6 +136,42 @@
 
 .post_user img{
   border: solid green 3px;
+  border-radius: 40px;
+}
+
+.post_user{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-start;
+  width: 100%;
+    margin-left: 15px;
+    margin-top: 10px;
+}
+
+.right{
+  display: flex;
+  align-items: center;
+}
+
+.comments{
+    width: 100%;
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+    background-color: #4267B2;
+    max-height: 500px;
+    padding: 10px;
+}
+
+.comment{
+    background-color: #98f6d6;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.see-comments:hover{
+    cursor: pointer;
 }
 
 
@@ -233,6 +183,9 @@ const sidebar = document.querySelector(".sidebar");
 const sidebarOpenBtn = document.querySelector("#sidebar-open");
 const sidebarCloseBtn = document.querySelector("#sidebar-close");
 const sidebarLockBtn = document.querySelector("#lock-icon");
+
+const comment_texts = document.querySelectorAll(".see-comments")
+const comments = document.querySelectorAll(".comments")
 
 // Function to toggle the lock state of the sidebar
 const toggleLock = () => {
@@ -273,6 +226,26 @@ if (window.innerWidth < 800) {
   sidebar.classList.remove("hoverable");
 }
 
+for (let i=0; i<comment_texts.length; i++){
+    let show = false;
+
+   (function(index){
+                 comment_texts[index].addEventListener('click', function(){
+           if (!show){
+               comments[index].style.display='flex'
+               show=true
+           }else{
+               comments[index].style.display='none'
+               show=false
+           }
+       })
+
+
+   })(i)
+
+}
+
+
 // Adding event listeners to buttons and sidebar for the corresponding actions
 sidebarLockBtn.addEventListener("click", toggleLock);
 sidebar.addEventListener("mouseleave", hideSidebar);
@@ -280,4 +253,4 @@ sidebar.addEventListener("mouseenter", showSidebar);
 sidebarOpenBtn.addEventListener("click", toggleSidebar);
 sidebarCloseBtn.addEventListener("click", toggleSidebar);
 </script>
-</html>
+{% endblock %}

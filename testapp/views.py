@@ -2,7 +2,9 @@ from django.contrib.auth import authenticate, login as log_in, logout as log_out
 from django.contrib import messages
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth.models import User
-from .models import User_Profile, Post
+from .models import User_Profile, Post, CommentPost
+from .forms import PostForm
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 def index(request):
@@ -67,3 +69,23 @@ def logout(request):
 
 def settings(request):
     return render(request, 'settings.html')
+
+
+@login_required(login_url='login')
+def upload_post(request):
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.user = request.user
+            user_profile = User_Profile.objects.get(user=request.user)
+            post.user_profile = user_profile
+            post.save()
+            messages.success(request, 'New post has been uploaded!')
+            return redirect('index')
+    else:
+        form = PostForm(request.POST)
+    return render(request, 'upload_post.html', {'form': form})
+
+
+
