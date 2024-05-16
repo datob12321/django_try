@@ -23,6 +23,7 @@ class Post(models.Model):
     post_image = models.ImageField(upload_to='post_pics', blank=True, null=True)
     post_video = models.FileField(upload_to='post_video', blank=True, null=True)
     likes = models.IntegerField(default=0)
+    comments_count = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     liked = models.BooleanField(default=False)
@@ -43,7 +44,19 @@ class LikePost(models.Model):
 class CommentPost(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     user_profile = models.ForeignKey(User_Profile, on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    text = models.TextField(null=True)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,15 +1,15 @@
+from django.contrib.auth import authenticate, login as log_in, logout as log_out
 from django.contrib import messages
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth.models import User, auth
-from django.contrib.auth import authenticate, logout, login as log_in
 from django.contrib.auth.decorators import login_required
-from .models import User_Profile, Post, LikePost, FollowUser
+from .models import User_Profile, Post, LikePost, FollowUser, CommentPost
+from .forms import PostForm
 
 
 # Create your views here.
 def index(request):
     posts = Post.objects.all()
-
     return render(request, 'index.html', {'posts': posts})
 
 
@@ -53,12 +53,32 @@ def signup(request):
 
 @login_required(login_url='login')
 def logout_user(request):
-    logout(request)
+    log_out(request)
     return redirect('login')
 
 
 def settings(request):
     return render(request, 'settings.html')
+
+
+@login_required(login_url='login')
+def upload_post(request):
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.user = request.user
+            user_profile = User_Profile.objects.get(user=request.user)
+            post.user_profile = user_profile
+            post.save()
+            messages.success(request, 'New post has been uploaded!')
+            return redirect('index')
+    else:
+        form = PostForm(request.POST)
+    return render(request, 'upload_post.html', {'form': form})
+
+
+
 
 
 def login(request):

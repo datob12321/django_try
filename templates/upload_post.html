@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Post{% endblock %}
+
+{% block headblock %}
+<head>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+	</head>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+
+<div class="col-md-7 col-xl-8">
+	<div class="tab-content">
+		 <div class="tab-pane fade show active" id="account" role="tabpanel">
+           <div class="card">
+             <div class="card-header">
+               <div class="card-actions float-right">
+
+<h5 class="card-title mb-0">Public info</h5>
+</div>
+<div class="card-body">
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+<div class="row">
+<div class="col-md-8">
+{{ form }}
+</div>
+
+</div>
+
+<button type="submit" class="btn btn-primary">Upload</button>
+
+</form>
+</div>
+</div>
+
+</div>
+
+      </div>
+     </div>
+   </div>
+</div>
+
+<style>
+	.row{
+		display: flex;
+		justify-content: center;
+		margin-left: 100px;
+	}
+</style>
+{% endblock %}
