@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 
 class User_Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    profile_picture = models.ImageField(upload_to='profile_pics', default='default_profile_pic')
+    profile_picture = models.ImageField(upload_to='profile_pics', default='default_profile_pic.jpg')
     bio = models.TextField(blank=True, null=True)
     location = models.TextField(blank=True, null=True)
     followers = models.IntegerField(default=0)
@@ -18,6 +18,7 @@ class User_Profile(models.Model):
 
 class Post(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user_profile = models.ForeignKey(User_Profile, on_delete=models.CASCADE)
     post_text = models.TextField(blank=True, null=True)
     post_image = models.ImageField(upload_to='post_pics', blank=True, null=True)
     post_video = models.FileField(upload_to='post_video', blank=True, null=True)
@@ -36,6 +37,12 @@ class LikePost(models.Model):
 
     def __str__(self):
         return self.user.username + ' ' + self.post.post_text
+
+class CommentPost(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user_profile = models.ForeignKey(User_Profile, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+
 
 
 class FollowUser(models.Model):
