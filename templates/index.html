@@ -148,10 +148,7 @@
 
         <div class="like">
           <div class="left">
-            <form method="POST" action="">
-            {% csrf_token %}
-            <button type="submit"><a href="#"><i type="submit" class="fa fa-thumbs-up"></i></a></button>
-          </form>
+            <button><a href="{% url 'like_content' post.id %}"><i style="color: {% if post.liked %} red; {% else %} currentColor; {% endif %}" type="submit"   class="fa fa-thumbs-up"></i></a></button>
             <h2>{{ post.likes }}</h2>
           </div>
         </div>

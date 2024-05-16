@@ -25,6 +25,8 @@ class Post(models.Model):
     likes = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    liked = models.BooleanField(default=False)
+
 
     def __str__(self):
         return self.user.username + ' ' + self.post_text

@@ -5,9 +5,11 @@ from django.contrib.auth import authenticate, logout, login as log_in
 from django.contrib.auth.decorators import login_required
 from .models import User_Profile, Post, LikePost, FollowUser
 
+
 # Create your views here.
 def index(request):
     posts = Post.objects.all()
+
     return render(request, 'index.html', {'posts': posts})
 
 
@@ -85,12 +87,15 @@ def like_content(request, post_id):
     if LikePost.objects.filter(user=user, post=post).exists():  # unlike
         LikePost.objects.filter(user=user, post=post).delete()
         post.likes -= 1
+        post.liked = False
         post.save()
+
     else:
         LikePost.objects.create(user=user, post=post)
         post.likes += 1
+        post.liked = True
         post.save()
-    return redirect('index')
+    return redirect('/')
 
 
 @login_required(login_url='login')
