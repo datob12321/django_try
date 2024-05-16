@@ -12,21 +12,26 @@
       <div class="content">
         <header>Login Form</header>
         <form action="{% url 'login' %}" method="POST">
-          {% csrf_token %}
+            {% csrf_token %}
+          {% if messages %}
+            {% for message in messages %}
+              <p style="color: red;">{{ message }}</p>
+            {% endfor %}
+          {% endif %}
           <div class="field">
             <span class="fa fa-user"></span>
-            <input type="text" name="username" required placeholder="Username">
+            <input type="text" required placeholder="Username" name="username">
           </div>
           <div class="field space">
             <span class="fa fa-lock"></span>
-            <input type="password" name="password" class="pass-key" required placeholder="Password">
+            <input type="password" class="pass-key" required placeholder="Password" name="password">
             <span class="show">SHOW</span>
           </div>
           <div class="pass">
             <a href="{% url 'password_reset' %}">Forgot Password?</a>
           </div>
           <div class="field">
-            <input type="submit" value="LOGIN">
+            <input type="submit" value="LOGIN" name="login">
           </div>
         </form>
         <div class="login">Or login with</div>

@@ -1,10 +1,13 @@
-from django.contrib.auth import authenticate, login as log_in, logout as log_out
 from django.contrib import messages
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth.models import User
 from .models import User_Profile, Post, CommentPost
 from .forms import PostForm
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User, auth
+from django.contrib.auth import authenticate, logout, login as log_in
+from django.contrib.auth.decorators import login_required
+from .models import User_Profile, Post, LikePost, FollowUser
 
 # Create your views here.
 def index(request):
@@ -58,12 +61,14 @@ def signup(request):
             messages.info(request, 'Password not matching')
             return redirect('signup')
 
+    if request.user.is_authenticated:
+        return redirect('index')
+
     else:
         return render(request, 'signup.html')
 
 
 def logout(request):
-    log_out(request)
     return redirect('login')
 
 
@@ -87,5 +92,43 @@ def upload_post(request):
         form = PostForm(request.POST)
     return render(request, 'upload_post.html', {'form': form})
 
+@login_required(login_url='login')
+def like_content(request, post_id):
+    post = Post.objects.get(id=post_id)
+    user = request.user
+    if LikePost.objects.filter(user=user, post=post).exists():  # unlike
+        LikePost.objects.filter(user=user, post=post).delete()
+        post.likes -= 1
+        post.save()
+    else:
+        LikePost.objects.create(user=user, post=post)
+        post.likes += 1
+        post.save()
+    return redirect('index')
 
 
+@login_required(login_url='login')
+def follow_user(request):
+    if request.method == 'POST':
+        following_id = request.POST['following_id']
+        following = User.objects.get(id=following_id)
+        follower = request.user
+        if FollowUser.objects.filter(follower=follower, following=following).exists():
+            FollowUser.objects.filter(follower=follower, following=following).delete()
+            following_profile = User_Profile.objects.get(user=following)
+            following_profile.followers -= 1
+            following_profile.save()
+            follower_profile = User_Profile.objects.get(user=follower)
+            follower_profile.following -= 1
+            follower_profile.save()
+        else:
+            FollowUser.objects.create(follower=follower, following=following)
+            following_profile = User_Profile.objects.get(user=following)
+            following_profile.followers += 1
+            following_profile.save()
+            follower_profile = User_Profile.objects.get(user=follower)
+            follower_profile.following += 1
+            follower_profile.save()
+
+        return redirect('index')
+    return redirect('index')

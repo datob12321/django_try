@@ -34,14 +34,17 @@ class CommentPost(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
 
 
+class LikePost(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.user.username + ' ' + self.post.post_text
 
 
+class FollowUser(models.Model):
+    follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='follower')
+    following = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')
 
-
-
-
-
-
-
-
-
+    def __str__(self):
+        return self.follower.username + ' ' + self.following.username
