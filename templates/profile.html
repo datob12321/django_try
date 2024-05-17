@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block headblock %}
+<head>
+
+
+    </head>
+{% endblock %}
+
+{% block content %}
+<div class="container db-social">
+    <div class="jumbotron jumbotron-fluid"></div>
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-xl-11">
+                <div class="widget head-profile has-shadow">
+                    <div class="widget-body pb-0">
+                        <div class="row d-flex align-items-center">
+                            <div class="col-xl-4 col-md-4 d-flex justify-content-lg-start justify-content-md-start justify-content-center">
+                                <ul>
+                                    <li>
+                                        <div class="counter">{{ length_of_posts }}</div>
+                                        <div class="heading">Posts</div>
+                                    </li>
+                                    <li>
+                                        <div class="counter">{{ user_profile.followers }}</div>
+                                        <div class="heading">Followers</div>
+                                    </li>
+                                    <li>
+                                        <div class="counter">{{ user_profile.following }}</div>
+                                        <div class="heading">Following</div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-xl-4 col-md-4 d-flex justify-content-center">
+                                <div class="image-default">
+                                    <img class="rounded-circle" src="{{ user_profile.profile_picture.url }}" alt="profile image">
+                                </div>
+                                <div class="infos">
+                                    <h2>{{ user.username }}</h2>
+                                    <div class="location">{{ user_profile.location }}</div>
+                                </div>
+                            </div>
+                            <div class="col-xl-4 col-md-4 d-flex justify-content-lg-end justify-content-md-end justify-content-center">
+                                <div class="follow">
+
+                                    <form method="POST" action="{% url 'follow' %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" value="{{ user_profile.user.id }}" name="following_id">
+                                        {% if user.username == user_profile.user.username %}
+                                        <a href="{% url 'settings' %}"><button class="btn btn-shadow" type="button" > Account Settings </button></a>
+                                        {% else %}
+                                        <button class="btn btn-shadow" type="submit">{{ button_text }}</button>
+                                        {% endif %}
+                                    </form>
+                                </div>
+
+                                    <div class="actions dark">
+                                        <div class="dropdown">
+                                            <button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">
+                                                <i class="la la-ellipsis-h"></i>
+                                            </button>
+                                            <div class="dropdown-menu" x-placement="bottom-start" style="display: none; position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(0px, 35px, 0px);">
+                                                <a href="#" class="dropdown-item">
+                                                Report
+                                                </a>
+                                                <a href="#" class="dropdown-item">
+                                                Block
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
+

@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
 # Create your models here.
 
 
@@ -28,10 +29,8 @@ class Post(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     liked = models.BooleanField(default=False)
 
-
     def __str__(self):
         return self.user.username + ' ' + self.post_text
-
 
 
 class LikePost(models.Model):
@@ -41,23 +40,26 @@ class LikePost(models.Model):
     def __str__(self):
         return self.user.username + ' ' + self.post.post_text
 
+
 class CommentPost(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     user_profile = models.ForeignKey(User_Profile, on_delete=models.CASCADE)
     text = models.TextField(null=True)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
+    created_at = models.DateTimeField(auto_now_add=True)
+    liked = models.BooleanField(default=False)
+    likes = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.user.username + ' ' + self.text
 
 
+class LikeComment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    comment = models.ForeignKey(CommentPost, on_delete=models.CASCADE)
 
-
-
-
-
-
-
-
-
-
+    def __str__(self):
+        return self.user.username + ' ' + self.comment.text
 
 
 class FollowUser(models.Model):

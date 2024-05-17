@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth.models import User, auth
 from django.contrib.auth.decorators import login_required
-from .models import User_Profile, Post, LikePost, FollowUser, CommentPost
+from .models import User_Profile, Post, LikePost, FollowUser, CommentPost, LikeComment
 from .forms import PostForm
 
 
@@ -78,9 +78,6 @@ def upload_post(request):
     return render(request, 'upload_post.html', {'form': form})
 
 
-
-
-
 def login(request):
     if request.method == 'POST':
         if 'login' in request.POST:
@@ -104,7 +101,7 @@ def login(request):
 def like_content(request, post_id):
     post = Post.objects.get(id=post_id)
     user = request.user
-    if LikePost.objects.filter(user=user, post=post).exists():  # unlike
+    if LikePost.objects.filter(user=user, post=post).first():  # unlike
         LikePost.objects.filter(user=user, post=post).delete()
         post.likes -= 1
         post.liked = False
@@ -119,11 +116,30 @@ def like_content(request, post_id):
 
 
 @login_required(login_url='login')
+def like_comment(request, comment_id):
+    comment = CommentPost.objects.get(id=comment_id)
+    user = request.user
+    if LikeComment.objects.filter(user=user, comment=comment).first():
+        LikeComment.objects.filter(user=user, comment=comment).delete()
+        comment.likes -= 1
+        comment.liked = False
+        comment.save()
+    else:
+        LikeComment.objects.create(user=user, comment=comment)
+        comment.likes += 1
+        comment.liked = True
+        comment.save()
+    return redirect('/')
+
+
+@login_required(login_url='login')
 def follow_user(request):
     if request.method == 'POST':
         following_id = request.POST['following_id']
         following = User.objects.get(id=following_id)
         follower = request.user
+
+
         if FollowUser.objects.filter(follower=follower, following=following).exists():
             FollowUser.objects.filter(follower=follower, following=following).delete()
             following_profile = User_Profile.objects.get(user=following)
@@ -141,5 +157,26 @@ def follow_user(request):
             follower_profile.following += 1
             follower_profile.save()
 
-        return redirect('index')
+        return redirect('profile', pk=following.username)
     return redirect('index')
+
+
+@login_required(login_url='login')
+def profile(request, pk):
+    user = User.objects.get(username=pk)
+    user_profile = User_Profile.objects.get(user=user)
+    posts = Post.objects.filter(user=user).order_by('-created_at')
+    length_of_posts = len(posts)
+
+    if FollowUser.objects.filter(follower=request.user, following=user).first():
+        button_text = 'Unfollow'
+    else:
+        button_text = 'Follow'
+
+    context = {
+        'user_profile': user_profile,
+        'posts': posts,
+        'length_of_posts': length_of_posts,
+        'button_text': button_text,
+    }
+    return render(request, 'profile.html', context)
