@@ -1,34 +1,20 @@
 from django.contrib import messages
 from django.shortcuts import render, redirect, HttpResponse
-from django.contrib.auth.models import User
-from .models import User_Profile, Post, CommentPost
-from .forms import PostForm
-from django.contrib.auth.decorators import login_required
+
 from django.contrib.auth.models import User, auth
 from django.contrib.auth import authenticate, logout, login as log_in
 from django.contrib.auth.decorators import login_required
 from .models import User_Profile, Post, LikePost, FollowUser
 
+from django.contrib.auth.models import User
+from .models import User_Profile, Post, CommentPost
+from .forms import PostForm
+from django.contrib.auth.decorators import login_required
+
 # Create your views here.
 def index(request):
     posts = Post.objects.all()
     return render(request, 'index.html', {'posts': posts})
-
-
-def login(request):
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            log_in(request, user)
-            messages.success(request, 'You are logged in successfully!')
-            return redirect('index')
-        else:
-            messages.error(request, 'Invalid username or password!')
-            return redirect('login')
-    else:
-        return render(request, 'login.html')
 
 
 def signup(request):
@@ -40,17 +26,18 @@ def signup(request):
 
         if password == password2:
             if User.objects.filter(username=username).exists():
-                messages.info(request, 'Username Taken')
+                messages.error(request, 'Username Taken')
                 return redirect('signup')
             elif User.objects.filter(email=email).exists():
-                messages.info(request, 'Email Taken')
+                messages.error(request, 'Email Taken')
                 return redirect('signup')
             else:
                 user = User.objects.create_user(username=username, email=email, password=password)
                 user.save()
 
                 # Log user in and redirect to setting page
-
+                user_login = authenticate(username=username, password=password)
+                log_in(request, user_login)
 
                 # create a profile object for new user
                 user_mode = User.objects.get(username=username)
@@ -58,7 +45,7 @@ def signup(request):
                 new_profile.save()
                 return redirect('settings')
         else:
-            messages.info(request, 'Password not matching')
+            messages.error(request, 'Password not matching')
             return redirect('signup')
 
     if request.user.is_authenticated:
@@ -68,7 +55,9 @@ def signup(request):
         return render(request, 'signup.html')
 
 
-def logout(request):
+@login_required(login_url='login')
+def logout_user(request):
+    logout(request)
     return redirect('login')
 
 
@@ -76,21 +65,25 @@ def settings(request):
     return render(request, 'settings.html')
 
 
-@login_required(login_url='login')
-def upload_post(request):
+
+def login(request):
     if request.method == 'POST':
-        form = PostForm(request.POST, request.FILES)
-        if form.is_valid():
-            post = form.save(commit=False)
-            post.user = request.user
-            user_profile = User_Profile.objects.get(user=request.user)
-            post.user_profile = user_profile
-            post.save()
-            messages.success(request, 'New post has been uploaded!')
-            return redirect('index')
+        if 'login' in request.POST:
+            username = request.POST['username']
+            password = request.POST['password']
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                log_in(request, user)
+                messages.success(request, 'You are logged in successfully!')
+                return redirect('index')
+            else:
+                messages.error(request, 'Invalid username or password!')
+                return redirect('login')
+    if request.user.is_authenticated:
+        return redirect('index')
     else:
-        form = PostForm(request.POST)
-    return render(request, 'upload_post.html', {'form': form})
+        return render(request, 'login.html')
+
 
 @login_required(login_url='login')
 def like_content(request, post_id):
@@ -132,3 +125,24 @@ def follow_user(request):
 
         return redirect('index')
     return redirect('index')
+
+
+@login_required(login_url='login')
+def profile(request, pk):
+    user = User.objects.get(username=pk)
+    user_profile = User_Profile.objects.get(user=user)
+    posts = Post.objects.filter(user=user).order_by('-created_at')
+    length_of_posts = len(posts)
+
+    if FollowUser.objects.filter(follower=request.user, following=user).first():
+        button_text = 'Unfollow'
+    else:
+        button_text = 'Follow'
+
+    context = {
+        'user_profile': user_profile,
+        'posts': posts,
+        'length_of_posts': length_of_posts,
+        'button_text': button_text,
+    }
+    return render(request, 'profile.html', context)

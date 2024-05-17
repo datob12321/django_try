@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'side_bar.css' %}" />
+    <link rel="stylesheet" href="{% static 'profile.css' %}" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link flex href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
@@ -81,31 +82,38 @@
             <li class="item">
               <a href="#" class="link flex">
                 <i class="bx bx-flag"></i>
-                <span><a href="{% url 'settings' %}">Notice Board</a></span>
+                <span><a href="">Notice Board</a></span>
               </a>
             </li>
+
             <li class="item">
               <a href="#" class="link flex">
                 <i class="bx bx-award"></i>
                 <span>Award</span>
               </a>
             </li>
+
             <li class="item">
-              <a href="#" class="link flex">
+              <a href="{% url 'settings' %}" class="link flex">
                 <i class="bx bx-cog"></i>
                 <span>Setting</span>
               </a>
             </li>
+            <li class="profile">
+              <a href="{% url 'profile' user.username %}" class="link flex">
+                <i class="bx bx-user"></i>
+                <span>Profile</span>
+              </a>
           </ul>
         </div>
 
         <div class="sidebar_profile flex">
           <span class="nav_image">
-            <img src="images/profile.jpg" alt="logo_img" />
+            <img src="{{ user_profile.profile_picture.url }}" alt="logo_img" />
           </span>
           <div class="data_text">
-            <span class="name">David Oliva</span>
-            <span class="email">david@gmail.com</span>
+            <span class="name">{{ user.username }}</span>
+            <span class="email">{{ user.email }}</span>
           </div>
         </div>
       </div>
