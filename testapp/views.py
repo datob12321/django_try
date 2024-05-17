@@ -11,9 +11,11 @@ from .models import User_Profile, Post, CommentPost
 from .forms import PostForm
 from django.contrib.auth.decorators import login_required
 
+
 # Create your views here.
+@login_required(login_url='login')
 def index(request):
-    posts = Post.objects.all()
+    posts = Post.objects.order_by('-created_at').all()
     return render(request, 'index.html', {'posts': posts})
 
 
@@ -85,6 +87,24 @@ def login(request):
         return render(request, 'login.html')
 
 
+
+@login_required(login_url='login')
+def upload_post(request):
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.user = request.user
+            user_profile = User_Profile.objects.get(user=request.user)
+            post.user_profile = user_profile
+            post.save()
+            messages.success(request, 'New post has been uploaded!')
+            return redirect('index')
+    else:
+        form = PostForm(request.POST)
+    return render(request, 'upload_post.html', {'form': form})
+
+
 @login_required(login_url='login')
 def like_content(request, post_id):
     post = Post.objects.get(id=post_id)
@@ -140,9 +160,29 @@ def profile(request, pk):
         button_text = 'Follow'
 
     context = {
+        'user_obj': user,
         'user_profile': user_profile,
         'posts': posts,
         'length_of_posts': length_of_posts,
         'button_text': button_text,
     }
     return render(request, 'profile.html', context)
+
+
+@login_required(login_url='login')
+def make_comment(request):
+    user = User.objects.get(username=request.user)
+    user_profile = User_Profile.objects.get(user=user)
+    post = int(request.POST.get('post_id'))
+    post = Post.objects.get(id=post)
+    comment_text = request.POST.get('comment_text')
+    if comment_text:
+        comment_obj = CommentPost.objects.create(user=user, user_profile=user_profile,
+                                                 text=comment_text, post=post)
+        comment_obj.save()
+        post.comments_count += 1
+        post.save()
+        return redirect('index')
+
+
+
