@@ -103,17 +103,21 @@
                 <span>Setting</span>
               </a>
             </li>
-            <li class="profile">
+            {% if user.is_authenticated %}
+               <li class="profile">
               <a href="{% url 'profile' user.username %}" class="link flex">
                 <i class="bx bx-user"></i>
                 <span>Profile</span>
               </a>
             </li>
-            <li class="logout">
+            {% endif %}
+
+            <li class="profile">
               <a href="{% url 'logout' %}" class="link flex">
-                <i class="bx bx-log-out"></i>
-                <span>Logout</span>
+                <i class="bx"></i>
+                <span>Log out</span>
               </a>
+            </li>
           </ul>
         </div>
 

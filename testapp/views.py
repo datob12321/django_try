@@ -1,26 +1,28 @@
-import json
 
 from django.contrib.auth import authenticate, login as log_in, logout as log_out
 from django.contrib import messages
 from django.forms import model_to_dict
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth.models import User, auth
+
 from django.contrib.auth.decorators import login_required
-from .models import User_Profile, Post, LikePost, FollowUser, CommentPost, LikeComment
+from .models import User_Profile, Post, LikePost, FollowUser
 from .forms import PostForm
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core import serializers
+from django.contrib.auth.decorators import login_required
 
 
 # Create your views here.
 def index(request):
-    posts = Post.objects.all()
+    posts = Post.objects.order_by('-created_at').all()
     for post in posts:
         if LikePost.objects.filter(user=request.user, post=post).first():
             post.liked = True
         else:
             post.liked = False
+
 
     return render(request, 'index.html', {'posts': posts})
 
@@ -73,22 +75,6 @@ def settings(request):
     return render(request, 'settings.html')
 
 
-@login_required(login_url='login')
-def upload_post(request):
-    if request.method == 'POST':
-        form = PostForm(request.POST, request.FILES)
-        if form.is_valid():
-            post = form.save(commit=False)
-            post.user = request.user
-            user_profile = User_Profile.objects.get(user=request.user)
-            post.user_profile = user_profile
-            post.save()
-            messages.success(request, 'New post has been uploaded!')
-            return redirect('index')
-    else:
-        form = PostForm(request.POST)
-    return render(request, 'upload_post.html', {'form': form})
-
 
 def login(request):
     if request.method == 'POST':
@@ -113,6 +99,24 @@ from django.core.exceptions import ObjectDoesNotExist
 
 
 @csrf_exempt
+
+@login_required(login_url='login')
+def upload_post(request):
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.user = request.user
+            user_profile = User_Profile.objects.get(user=request.user)
+            post.user_profile = user_profile
+            post.save()
+            messages.success(request, 'New post has been uploaded!')
+            return redirect('index')
+    else:
+        form = PostForm(request.POST)
+    return render(request, 'upload_post.html', {'form': form})
+
+
 @login_required(login_url='login')
 def like_content(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'POST':
@@ -174,7 +178,6 @@ def follow_user(request):
         following_id = request.POST['following_id']
         following = User.objects.get(id=following_id)
         follower = request.user
-
         if FollowUser.objects.filter(follower=follower, following=following).exists():
             FollowUser.objects.filter(follower=follower, following=following).delete()
             following_profile = User_Profile.objects.get(user=following)
@@ -209,9 +212,29 @@ def profile(request, pk):
         button_text = 'Follow'
 
     context = {
+        'user_obj': user,
         'user_profile': user_profile,
         'posts': posts,
         'length_of_posts': length_of_posts,
         'button_text': button_text,
     }
     return render(request, 'profile.html', context)
+
+
+@login_required(login_url='login')
+def make_comment(request):
+    user = User.objects.get(username=request.user)
+    user_profile = User_Profile.objects.get(user=user)
+    post = int(request.POST.get('post_id'))
+    post = Post.objects.get(id=post)
+    comment_text = request.POST.get('comment_text')
+    if comment_text:
+        comment_obj = CommentPost.objects.create(user=user, user_profile=user_profile,
+                                                 text=comment_text, post=post)
+        comment_obj.save()
+        post.comments_count += 1
+        post.save()
+        return redirect('index')
+
+
+

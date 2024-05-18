@@ -9,10 +9,15 @@
         {% for post in posts %}
       <div class="posts">
 
-        <div class="post_user">
-          <img src="{{ post.user_profile.profile_picture.url }}" width="70px">
+            <div class="post_user">
+                <a href="{% url 'profile' post.user.username %}">
+                    <div class="user-image">
+                        <img src="{{ post.user_profile.profile_picture.url }}" width="70px">
           <h3>{{ post.user.username }}</h3>
+                    </div>
+                     </a>
         </div>
+
       {% if post.post_text %}
          <div class="text">
           <h1>{{ post.post_text }}</h1>
@@ -85,11 +90,24 @@
           <div class="comments">
               {% for comment in post.comments.all %}
               <div class="comment">
+                   <a href="{% url 'profile' comment.user.username %}"><img src="{{ comment.user_profile.profile_picture.url }}" width="30px"></a>
                   <h3>{{ comment.text }}</h3>
               </div>
-
               {% endfor %}
+              {% if user.is_authenticated %}
+              <h1>make a comment</h1>
+                            <div class="make_comment">
+                  <form method="post">
+                      {% csrf_token %}
+                      <textarea rows="2" cols="48" name="comment_text"></textarea>
+                      <input type="hidden" name="post_id" value="{{ post.id }}">
+                      <input type="submit" value="comment">
+                  </form>
+              </div>
+              {% endif %}
+
           </div>
+
 
       </div>
 {% endfor %}
@@ -181,6 +199,16 @@
     margin-top: 10px;
 }
 
+.user-image{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-start;
+  width: 100%;
+
+}
+
+
 .right{
   display: flex;
   align-items: center;
@@ -200,6 +228,9 @@
     background-color: #98f6d6;
     padding-left: 5px;
     padding-right: 5px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }
 
 .see-comments:hover{
@@ -207,6 +238,10 @@
 }
 .like-button:focus {
     outline: none;
+}
+
+.make_comment{
+    width: 100%;
 }
 
 
