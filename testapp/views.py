@@ -16,7 +16,7 @@ from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 def index(request):
-    posts = Post.objects.order_by('-created_at').all()
+    posts = Post.objects.all()
     for post in posts:
         if LikePost.objects.filter(user=request.user, post=post).first():
             post.liked = True
