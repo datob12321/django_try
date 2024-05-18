@@ -27,14 +27,13 @@ class Post(models.Model):
     comments_count = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    liked = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.username + ' ' + self.post_text
 
 
 class LikePost(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='like_user')
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -47,7 +46,6 @@ class CommentPost(models.Model):
     text = models.TextField(null=True)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
     created_at = models.DateTimeField(auto_now_add=True)
-    liked = models.BooleanField(default=False)
     likes = models.IntegerField(default=0)
 
     def __str__(self):
@@ -55,7 +53,7 @@ class CommentPost(models.Model):
 
 
 class LikeComment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='like_comment_user')
     comment = models.ForeignKey(CommentPost, on_delete=models.CASCADE)
 
     def __str__(self):

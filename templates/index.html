@@ -34,10 +34,42 @@
         {% endif %}
 
         <div class="like">
-          <div class="left">
-            <button><a href="{% url 'like_content' post.id %}"><i style="color: {% if post.liked %} red; {% else %} currentColor; {% endif %}" type="submit"   class="fa fa-thumbs-up"></i></a></button>
-            <h2>{{ post.likes }}</h2>
-          </div>
+            <div class="left">
+                <button class="like-button" id="like-button-{{ post.id }}"  data-post-id="{{ post.id }}">
+                    <i style="color: {% if post.liked %} red; {% else %} currentColor; {% endif %}" class="fa fa-thumbs-up"></i>
+                </button>
+
+                <h2 class="likes" data-bs-toggle="modal" data-bs-target="#likesModal-{{ post.id }}" id="likes-count-{{ post.id }}">{{ post.likes }}</h2>
+
+
+                        <!-- Modal -->
+                            <div class="modal fade" id="likesModal-{{ post.id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                              <div class="modal-dialog">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                  </div>
+                                  <div class="modal-body">
+                                      {% for like in post.likepost_set.all %}
+                                        <div class="post_user">
+                                            <h5>
+                                                <img src="{{ like.user.user_profile.profile_picture.url }}" width="40">
+                                                <a style="margin-left: 10px;" href="{% url 'profile' like.user.username %}">{{ like.user.username }}</a>
+                                            </h5>
+                                        </div>
+                                      {% endfor %}
+                                  </div>
+                                  <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary">Save changes</button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+
+            </div>
           <div class="right">
           <h2 class="see-comments">
             {% if post.comments_count == 0 %}
@@ -68,6 +100,9 @@
   </body>
 
   <style>
+      .likes:hover{
+          cursor: pointer;
+      }
 
     .posts-container{
       margin: auto;
@@ -170,6 +205,9 @@
 .see-comments:hover{
     cursor: pointer;
 }
+.like-button:focus {
+    outline: none;
+}
 
 
   </style>
@@ -249,5 +287,56 @@ sidebar.addEventListener("mouseleave", hideSidebar);
 sidebar.addEventListener("mouseenter", showSidebar);
 sidebarOpenBtn.addEventListener("click", toggleSidebar);
 sidebarCloseBtn.addEventListener("click", toggleSidebar);
+
+
+$(document).ready(function() {
+    $('.like-button').click(function() {
+        var postId = $(this).data('post-id');  // assuming the post id is stored in a data attribute
+        $.ajax({
+            url: '/like_content/',
+            type: 'POST',
+            data: {
+                'post_id': postId,
+                'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+            },
+            dataType: 'json',
+            beforeSend: function(xhr, settings) {
+                xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+            },
+            success: function(data) {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    // update the likes count on the page
+                    $('#likes-count-' + postId).text(data.likes);
+                    // update the liked status on the page
+                    if (data.liked) {
+
+                        $('#like-button-' + postId).find('i').css('color', 'red');
+                    } else {
+
+                        $('#like-button-' + postId).find('i').css('color', 'currentColor');
+                    }
+                    // update the likes users in the modal
+                    var likes_users_html = '';
+                    for (var i = 0; i < data.likes_users.length; i++) {
+                        var user_profile = data.likes_users[i].user.user_profile;
+                        var user = data.likes_users[i].user;
+                        likes_users_html += '<div class="post_user"><h5><img src="' + user_profile['profile_picture'] + '" width="40"><a style="margin-left: 10px;" href="/profile/' + user['username'] + '">' + user['username'] + '</a></h5></div>';
+                    }
+                    $('#likesModal-' + postId).find('.modal-body').html(likes_users_html);
+
+
+
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('An error occurred: ' + status + '\n' + error);
+            }
+        });
+    });
+});
+
+
 </script>
 {% endblock %}

@@ -1,15 +1,27 @@
+import json
+
 from django.contrib.auth import authenticate, login as log_in, logout as log_out
 from django.contrib import messages
+from django.forms import model_to_dict
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth.models import User, auth
 from django.contrib.auth.decorators import login_required
 from .models import User_Profile, Post, LikePost, FollowUser, CommentPost, LikeComment
 from .forms import PostForm
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.core import serializers
 
 
 # Create your views here.
 def index(request):
     posts = Post.objects.all()
+    for post in posts:
+        if LikePost.objects.filter(user=request.user, post=post).first():
+            post.liked = True
+        else:
+            post.liked = False
+
     return render(request, 'index.html', {'posts': posts})
 
 
@@ -97,22 +109,46 @@ def login(request):
         return render(request, 'login.html')
 
 
+from django.core.exceptions import ObjectDoesNotExist
+
+
+@csrf_exempt
 @login_required(login_url='login')
-def like_content(request, post_id):
-    post = Post.objects.get(id=post_id)
-    user = request.user
-    if LikePost.objects.filter(user=user, post=post).first():  # unlike
-        LikePost.objects.filter(user=user, post=post).delete()
-        post.likes -= 1
-        post.liked = False
+def like_content(request):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'POST':
+        post_id = request.POST.get('post_id')
+
+        try:
+            post = Post.objects.get(id=post_id)
+        except ObjectDoesNotExist:
+            return JsonResponse({'error': 'Post not found'}, status=404)
+
+        user = request.user
+        if LikePost.objects.filter(user=user, post=post).first():  # unlike
+            LikePost.objects.filter(user=user, post=post).delete()
+            post.likes -= 1
+            post.liked = False
+        else:
+            LikePost.objects.create(user=user, post=post)
+            post.likes += 1
+            post.liked = True
+
+        # Get the updated list of users who liked the post
+        likes_users = post.likepost_set.all()
+        # Serialize the queryset to JSON
+        likes_users_json = []
+        for like in likes_users:
+            like_dict = model_to_dict(like)
+            like_dict['user'] = model_to_dict(like.user)
+            user_profile_dict = model_to_dict(like.user.user_profile)
+            user_profile_dict['profile_picture'] = request.build_absolute_uri(like.user.user_profile.profile_picture.url)
+            like_dict['user']['user_profile'] = user_profile_dict
+            likes_users_json.append(like_dict)
         post.save()
 
-    else:
-        LikePost.objects.create(user=user, post=post)
-        post.likes += 1
-        post.liked = True
-        post.save()
-    return redirect('/')
+        return JsonResponse({'likes': post.likes, 'liked': post.liked, 'likes_users': likes_users_json}, status=200)
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
 @login_required(login_url='login')
@@ -138,7 +174,6 @@ def follow_user(request):
         following_id = request.POST['following_id']
         following = User.objects.get(id=following_id)
         follower = request.user
-
 
         if FollowUser.objects.filter(follower=follower, following=following).exists():
             FollowUser.objects.filter(follower=follower, following=following).delete()
