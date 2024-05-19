@@ -1,4 +1,3 @@
-
 from django.contrib.auth import authenticate, login as log_in, logout as log_out
 from django.contrib import messages
 from django.forms import model_to_dict
@@ -6,7 +5,7 @@ from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth.models import User, auth
 
 from django.contrib.auth.decorators import login_required
-from .models import User_Profile, Post, LikePost, FollowUser
+from .models import User_Profile, Post, LikePost, FollowUser, CommentPost
 from .forms import PostForm
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -22,7 +21,6 @@ def index(request):
             post.liked = True
         else:
             post.liked = False
-
 
     return render(request, 'index.html', {'posts': posts})
 
@@ -75,7 +73,6 @@ def settings(request):
     return render(request, 'settings.html')
 
 
-
 def login(request):
     if request.method == 'POST':
         if 'login' in request.POST:
@@ -99,7 +96,6 @@ from django.core.exceptions import ObjectDoesNotExist
 
 
 @csrf_exempt
-
 @login_required(login_url='login')
 def upload_post(request):
     if request.method == 'POST':
@@ -145,7 +141,8 @@ def like_content(request):
             like_dict = model_to_dict(like)
             like_dict['user'] = model_to_dict(like.user)
             user_profile_dict = model_to_dict(like.user.user_profile)
-            user_profile_dict['profile_picture'] = request.build_absolute_uri(like.user.user_profile.profile_picture.url)
+            user_profile_dict['profile_picture'] = request.build_absolute_uri(
+                like.user.user_profile.profile_picture.url)
             like_dict['user']['user_profile'] = user_profile_dict
             likes_users_json.append(like_dict)
         post.save()
@@ -235,6 +232,3 @@ def make_comment(request):
         post.comments_count += 1
         post.save()
         return redirect('index')
-
-
-
