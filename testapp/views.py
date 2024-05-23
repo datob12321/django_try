@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.shortcuts import render, redirect, HttpResponse
-
+from django.http import JsonResponse
 from django.contrib.auth.models import User, auth
 from django.contrib.auth import authenticate, logout, login as log_in
 from django.contrib.auth.decorators import login_required
@@ -16,6 +16,12 @@ from django.contrib.auth.decorators import login_required
 @login_required(login_url='login')
 def index(request):
     posts = Post.objects.order_by('-created_at').all()
+    for post in posts:
+        if LikePost.objects.filter(post=post, user=request.user).first():
+            post.liked = True
+        else:
+            post.liked = False
+
     return render(request, 'index.html', {'posts': posts})
 
 
@@ -110,14 +116,19 @@ def like_content(request, post_id):
     post = Post.objects.get(id=post_id)
     user = request.user
     if LikePost.objects.filter(user=user, post=post).exists():  # unlike
+        liked = False
         LikePost.objects.filter(user=user, post=post).delete()
         post.likes -= 1
         post.save()
     else:
         LikePost.objects.create(user=user, post=post)
+        liked = True
         post.likes += 1
         post.save()
-    return redirect('index')
+
+    data = {'likes': post.likes, 'liked': liked}
+    return JsonResponse(data)
+
 
 
 @login_required(login_url='login')

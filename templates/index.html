@@ -39,10 +39,18 @@
         {% endif %}
 
         <div class="like">
-            <div class="left">
-            <button class="ajax_like" post_id="{{ post.id }}"><a href="{% url 'like_content' post.id %}"><i style="color: {% if post.liked %} red; {% else %} currentColor; {% endif %}" type="submit"   class="fa fa-thumbs-up"></i></a></button>
-            <h2>{{ post.likes }}</h2>
-          </div>
+
+                <form method="POST" class="like_class">
+                    {% csrf_token %}
+            <input class="like_id" type="hidden" value="{{ post.id }}">
+                    <button type="submit" class="like_button">
+                        <i type="submit"  style="color: {% if post.liked %}red{% else %}blue{% endif %}"  class="fa fa-thumbs-up"></i>
+                    </button>
+
+            <h2 class="likes">{{ post.likes }}</h2>
+
+                </form>
+
           <div class="right">
           <h2 class="see-comments">
             {% if post.comments_count == 0 %}
@@ -143,7 +151,7 @@
   font-size: 30px;
 }
 
-.left{
+.like_class{
   display: flex;
   gap: 10px;
   align-items: center;
@@ -286,9 +294,38 @@ sidebarOpenBtn.addEventListener("click", toggleSidebar);
 sidebarCloseBtn.addEventListener("click", toggleSidebar);
 
 
-$(document).ready(function(){
-    $('.post_id').
-})
-
 </script>
+
+<script
+  src="https://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous">
+</script>
+
+<script>
+    $(document).on('submit', '.like_class', function(e){
+        e.preventDefault();
+        var form = $(this);
+        var likeID = form.find('.like_id').val();
+        var csrf_token = form.find('input[name=csrfmiddlewaretoken]').val();
+
+        $.ajax({
+            type: 'POST',
+            url: 'like_content/' + likeID + '/',
+            data: {
+                csrfmiddlewaretoken: csrf_token
+            },
+            success: function(data){
+                form.find('.likes').text(data.likes)
+                if (data.liked){
+                    form.find('i').css('color', 'red');
+                }else{
+                    form.find('i').css('color', 'blue');
+                }
+            }
+        })
+    })
+</script>
+
+
 {% endblock %}
