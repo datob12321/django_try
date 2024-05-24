@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User, auth
 from django.contrib.auth import authenticate, logout, login as log_in
 from django.contrib.auth.decorators import login_required
-from .models import User_Profile, Post, LikePost, FollowUser
+from .models import User_Profile, Post, LikePost, FollowUser, LikeComment
 
 from django.contrib.auth.models import User
 from .models import User_Profile, Post, CommentPost
@@ -128,6 +128,24 @@ def like_content(request, post_id):
 
     data = {'likes': post.likes, 'liked': liked}
     return JsonResponse(data)
+
+
+
+@login_required(login_url='login')
+def like_comment(request, comment_id):
+    comment = CommentPost.objects.get(id=comment_id)
+    user = request.user
+    if LikeComment.objects.filter(user=user, comment=comment).first():
+        LikeComment.objects.filter(user=user, comment=comment).delete()
+        comment.likes -= 1
+        comment.liked = False
+        comment.save()
+    else:
+        LikeComment.objects.create(user=user, comment=comment)
+        comment.likes += 1
+        comment.liked = True
+        comment.save()
+    return redirect('index')
 
 
 

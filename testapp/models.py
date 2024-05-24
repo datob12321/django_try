@@ -29,10 +29,43 @@ class Post(models.Model):
 
 
 class CommentPost(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_comments')
     user_profile = models.ForeignKey(User_Profile, on_delete=models.CASCADE)
     text = models.TextField(null=True)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
+    likes = models.IntegerField(default=0)
+
+    def __str__(self):
+        try:
+            return self.text[:30]
+        except:
+            return self.text
+
+
+class ReplyComment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_replies')
+    user_profile = models.ForeignKey(User_Profile, on_delete=models.CASCADE)
+    text = models.TextField(null=True)
+    comment = models.ForeignKey(CommentPost, on_delete=models.CASCADE, related_name='replies', blank=True, null=True)
+    reply_to = models.IntegerField(default=0) # id of ReplyComment
+    likes = models.IntegerField(default=0)
+
+
+    def __str__(self):
+        try:
+            return self.text[:30]
+        except:
+            return self.text
+
+
+class ReplyAnswer(models.Model):
+    reply = models.ForeignKey(ReplyComment, on_delete=models.CASCADE, related_name='answers')
+    text = models.TextField(null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    user_profile = models.ForeignKey(User_Profile, on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return self.reply
 
 
 class LikePost(models.Model):
@@ -49,3 +82,11 @@ class FollowUser(models.Model):
 
     def __str__(self):
         return self.follower.username + ' ' + self.following.username
+
+
+class LikeComment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='like_comment_user')
+    comment = models.ForeignKey(CommentPost, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.user.username + ' ' + self.comment.text
