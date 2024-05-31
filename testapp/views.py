@@ -4,8 +4,8 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User, auth
 from django.contrib.auth import authenticate, logout, login as log_in
 from django.contrib.auth.decorators import login_required
-from .models import User_Profile, Post, LikePost, FollowUser, LikeComment
-
+from .models import User_Profile, Post, LikePost, FollowUser, LikeComment, ReplyComment, ReplyAnswer, Poll, PollChoice
+from django.template.loader import render_to_string
 from django.contrib.auth.models import User
 from .models import User_Profile, Post, CommentPost
 from .forms import PostForm
@@ -203,15 +203,52 @@ def make_comment(request):
     user = User.objects.get(username=request.user)
     user_profile = User_Profile.objects.get(user=user)
     post = int(request.POST.get('post_id'))
-    post = Post.objects.get(id=post)
+    post_obj = Post.objects.get(id=post)
     comment_text = request.POST.get('comment_text')
     if comment_text:
         comment_obj = CommentPost.objects.create(user=user, user_profile=user_profile,
-                                                 text=comment_text, post=post)
+                                                 text=comment_text, post=post_obj)
         comment_obj.save()
-        post.comments_count += 1
-        post.save()
+        post_obj.comments_count += 1
+        post_obj.save()
+        returned_content = render_to_string('index.html', {'comment': comment_obj})
+        data = {'returned_content': returned_content}
+        return JsonResponse(data)
+        # return redirect('index')
+
+
+@login_required(login_url='login')
+def reply_comment(request):
+    user = User.objects.get(username=request.user)
+    user_profile = User_Profile.objects.get(user=user)
+    comment_id = int(request.POST.get('comment_id'))
+    comment = CommentPost.objects.get(id=comment_id)
+    text = request.POST.get('reply_text')
+    reply_obj = ReplyComment.objects.create(user=user, user_profile=user_profile,
+                                            comment=comment, text=text)
+    reply_obj.save()
+    return redirect('index')
+
+
+@login_required(login_url='login')
+def make_poll(request):
+    if request.method == 'POST':
+        user = User.objects.get(username=request.user)
+        user_profile = User_Profile.objects.get(user=request.user)
+        poll_question = request.POST.get('poll_question')
+        poll_answers = []
+        for key, value in request.POST.items():
+            if key.startswith('choice_'):
+                poll_answers.append(value)
+        print(poll_answers)
+        poll = Poll.objects.create(question=poll_question, user=user, user_profile=user_profile)
+        poll.save()
+        for choice in poll_answers:
+            choice = PollChoice.objects.create(poll=poll, user=user,
+                                               user_profile=user_profile, choice=choice)
+            choice.save()
         return redirect('index')
+    return render(request, 'make_poll.html')
 
 
 

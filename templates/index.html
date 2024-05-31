@@ -66,17 +66,46 @@
           <div class="comments">
               {% for comment in post.comments.all %}
               <div class="comment">
-                   <a href="{% url 'profile' comment.user.username %}"><img src="{{ comment.user_profile.profile_picture.url }}" width="30px"></a>
+                  <div class="comment_in">
+                      <a href="{% url 'profile' comment.user.username %}"><img src="{{ comment.user_profile.profile_picture.url }}" width="30px"></a>
                   <h3>{{ comment.text }}</h3>
+                  </div>
+
+                  <div class="replies">
+                      <div class="com_likes"> <button type="submit" class="like_button">
+                        <i type="submit"  style="color: {% if post.liked %}red{% else %}blue{% endif %}"  class="fa fa-thumbs-up"></i>
+                    </button>
+                      <h2 class="likes">{{ comment.likes }}</h2>
+                      </div>
+
+                      <h4>replies: {{ comment.replies.all|length }}</h4>
+                      <button>reply</button>
+                  </div>
+                  <div>
+                      <div class="make_reply">
+                          <form method="POST" action="{% url 'reply_comment' %}">
+                              {% csrf_token %}
+                              <textarea  cols="47" placeholder="reply" name="reply_text" ></textarea>
+                              <input type="submit" value="reply">
+                              <input type="hidden" name="comment_id" value="{{ comment.id }}">
+                          </form>
+
+                      </div>
+                         {% for reply in comment.replies.all %}
+                       <img src="{{ reply.user_profile.profile_picture.url }}" width="50px">
+                      <h3>{{ reply.text }}</h3>
+                      {% endfor %}
+                      </div>
               </div>
+
               {% endfor %}
               {% if user.is_authenticated %}
               <h1>make a comment</h1>
                             <div class="make_comment">
                   <form method="post">
                       {% csrf_token %}
-                      <textarea rows="2" cols="48" name="comment_text"></textarea>
-                      <input type="hidden" name="post_id" value="{{ post.id }}">
+                      <textarea rows="2" cols="48" name="comment_text" class="comment_text"></textarea>
+                      <input type="hidden" name="post_id" class="post_id" value="{{ post.id }}">
                       <input type="submit" value="comment">
                   </form>
               </div>
@@ -202,8 +231,40 @@
     padding-left: 5px;
     padding-right: 5px;
     display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+    padding-bottom: 5px;
+}
+
+.comment_in{
+        background-color: #98f6d6;
+    padding-left: 5px;
+    padding-right: 5px;
+    display: flex;
     gap: 10px;
     align-items: center;
+}
+
+.com_likes{
+    display: flex;
+    justify-content: center;
+
+}
+.com_likes button{
+    background: none;
+    border: none;
+}
+
+
+.replies{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #5f85d2;
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 .see-comments:hover{
@@ -213,6 +274,8 @@
 .make_comment{
     width: 100%;
 }
+
+
 
 
   </style>
@@ -317,6 +380,33 @@ sidebarCloseBtn.addEventListener("click", toggleSidebar);
             },
             success: function(data){
                 form.find('.likes').text(data.likes)
+                if (data.liked){
+                    form.find('i').css('color', 'red');
+                }else{
+                    form.find('i').css('color', 'blue');
+                }
+            }
+        })
+    })
+
+    $(document).on('submit', '.make_comment', function(e){
+        e.preventDefault();
+        var form = $(this);
+        var text = form.find('.comment_text').val();
+        var post_id = form.find('.post_id').val();
+        var csrf_token = form.find('input[name=csrfmiddlewaretoken]').val();
+
+        $.ajax({
+            type: 'POST',
+            url: '/make_comment',
+            data: {
+                csrfmiddlewaretoken: csrf_token,
+                comment_text: text,
+                post_id: post_id
+            },
+            success: function(data){
+                form.find('.comments').append(data.returned_content)
+                console.log(data.text)
                 if (data.liked){
                     form.find('i').css('color', 'red');
                 }else{

@@ -90,3 +90,18 @@ class LikeComment(models.Model):
 
     def __str__(self):
         return self.user.username + ' ' + self.comment.text
+
+
+class Poll(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='polls')
+    user_profile = models.ForeignKey(User_Profile, on_delete=models.CASCADE)
+    question = models.TextField(blank=False, null=False)
+
+
+class PollChoice(models.Model):
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name='choices')
+    choice = models.TextField(blank=False, null=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user_profile = models.ForeignKey(User_Profile, on_delete=models.CASCADE)
+
+

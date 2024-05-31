@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Make Poll{% endblock %}
+
+{% block content %}
+
+<div class="main_poll">
+    <form method="POST" action=".">
+        {% csrf_token %}
+         <div class="above">
+
+        <div class="question">
+            <h2>Write a question: </h2>
+            <textarea cols="65" placeholder="poll question" name="poll_question"></textarea>
+        </div>
+
+        <div class="add_choice">
+            <button type="button">Add a choice</button>
+        </div>
+
+    </div>
+
+
+    <div class="choices">
+
+    </div>
+
+    <div class="submit_poll">
+        <input type="submit">
+    </div>
+    </form>
+
+
+</div>
+
+<style>
+    .main_poll{
+        width: 50%;
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .above{
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+
+    .choice{
+        display: flex;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var add = document.querySelector(".add_choice button");
+        var choices = document.querySelector(".choices");
+
+        var choiceCount = 0
+
+        function updateDeleteButtons() {
+            var deletes = document.querySelectorAll('.delete_choice button');
+            deletes.forEach(function(button) {
+                button.removeEventListener('click', deleteChoice);
+                button.addEventListener('click', deleteChoice);
+            });
+        }
+
+        function deleteChoice(event) {
+            var choiceDiv = event.target.closest('.choice');
+            choiceDiv.remove();
+        }
+
+        add.addEventListener('click', function() {
+            let new_choice = `
+                <div class="choice">
+                    <div class="choice_text">
+                        <textarea name="choice_${choiceCount}" cols="65" placeholder="choice"></textarea>
+                    </div>
+                    <div class="delete_choice">
+                        <button>DELETE</button>
+                    </div>
+                </div>
+            `;
+            choices.insertAdjacentHTML('beforeend', new_choice);
+            updateDeleteButtons();
+            choiceCount ++;
+        });
+
+        updateDeleteButtons(); // Initial call to set up any existing delete buttons
+    });
+</script>
+
+
+{% endblock %}
+
+
+    <form method="POST">
+    {% csrf_token %}
+    <input type="radio" name="ad" id="c1">
+<label for="c1">choice 1</label>
+
+<input type="radio" name="ad" id="c2">
+<label for="c2">choice 2</label>
+
+<input type="radio" name="ad" id="c3">
+<label for="c3">choice 3</label>
+
+<input type="submit">
+</form>
+
+
+
