@@ -22,6 +22,16 @@ def index(request):
         else:
             post.liked = False
 
+        comments = CommentPost.objects.filter(post=post)
+        post.comments_with_likes = []
+
+        for comment in comments:
+            if LikeComment.objects.filter(comment=comment, user=request.user).first():
+                comment.liked = True
+            else:
+                comment.liked = False
+            post.comments_with_likes.append(comment)
+
     return render(request, 'index.html', {'posts': posts})
 
 
@@ -145,7 +155,7 @@ def like_comment(request, comment_id):
         comment.likes += 1
         comment.liked = True
         comment.save()
-    return redirect('index')
+    return JsonResponse({'likes': comment.likes, 'liked': comment.liked})
 
 
 
